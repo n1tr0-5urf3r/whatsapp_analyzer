@@ -3,6 +3,7 @@ import csv
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
+
 # -*- coding: UTF-8 -*-
 
 # TODO
@@ -23,6 +24,7 @@ def generate_piechart(labels, values, colors, title, output):
     def absolute_value(val):
         a = np.round(val / 100. * values.sum(), 0)
         return a
+
     plt.clf()
     plt.pie(values, labels=labels, colors=colors,
             autopct=absolute_value, startangle=90)
@@ -30,6 +32,7 @@ def generate_piechart(labels, values, colors, title, output):
     plt.axis('equal')
     plt.tight_layout()
     plt.savefig(output)
+
 
 def generate_barchart(labels, values, ylabel, title, output):
     plt.clf()
@@ -42,6 +45,7 @@ def generate_barchart(labels, values, ylabel, title, output):
     plt.ylabel(ylabel)
     plt.title(title)
     plt.savefig(output, dpi=100)
+
 
 chat = file_txt.read()
 # Bring into csv format
@@ -101,7 +105,7 @@ with open('chat.csv', encoding="utf8") as csvfile:
             # Count emojis
             if not re.match(pattern_not_emoji, word):
                 # Remove everything else from emojis
-                emoji = re.sub(pattern_not_emoji+'♀', '', word)
+                emoji = re.sub(pattern_not_emoji + '♀', '', word)
                 for char in list(emoji):
                     if '\u200d' not in emoji:
                         if char in amount_emojis:
@@ -118,7 +122,7 @@ with open('chat.csv', encoding="utf8") as csvfile:
             amount_months[month] = 1
 
 sorted_words_values = sorted(amount_words.items(), key=lambda x: x[1], reverse=True)
-sorted_emojis = sorted(amount_emojis.items(), key=lambda  x: x[1], reverse= True)
+sorted_emojis = sorted(amount_emojis.items(), key=lambda x: x[1], reverse=True)
 list_words = []
 list_words_values = []
 list_emojis = []
@@ -143,16 +147,13 @@ for counter in range(0, 20):
 print("Nachrichten pro Monat")
 print("Meist genutzte Emojis: ")
 for counter in range(0, 10):
-    print(" {}: {}-mal". format(sorted_emojis[counter][0], sorted_emojis[counter][1]))
-    list_emojis.append("{} ".format(sorted_emojis[counter][0]))
-    #list_emojis.append(sorted_emojis[counter][0].encode())
+    print(" {}: {}-mal".format(sorted_emojis[counter][0], sorted_emojis[counter][1]))
+    list_emojis.append(sorted_emojis[counter][0])
     list_emojis_values.append(sorted_emojis[counter][1])
 for k, v in amount_months.items():
     print(" Monat {} - {} Nachrichten".format(k, v))
-    list_words_month.append(k.replace(".","/"))
+    list_words_month.append(k.replace(".", "/"))
     list_words_month_values.append(v)
-
-rcParams['font.sans-serif'] = ['Segoe UI Emoji']
 
 # Generate graphical output
 # Messages
@@ -163,7 +164,7 @@ title_messages = "Nachrichten seit {}\nGesamt: {}".format(first_date, total_mess
 output_messsages = 'img/messages_piechart.png'
 generate_piechart(labels_messages, values_messages, colors, title_messages, output_messsages)
 
-#Words
+# Words
 labels_words = ["Wörter\nvon {}".format(usr_recpt), "Wörter\nvon {}".format(usr_sender)]
 values_words = np.array([amount_words_user[usr_recpt], amount_words_user[usr_sender]])
 title_words = "Wörter gesamt: {}".format(total_words)
@@ -171,5 +172,7 @@ output_words = "img/words_piechart.png"
 generate_piechart(labels_words, values_words, colors, title_words, output_words)
 
 generate_barchart(list_words, list_words_values, "Anzahl", "Meist genutzte Wörter", "img/words_barchart.png")
-generate_barchart(list_words_month, list_words_month_values, "Anzahl", "Anzahl Wörter pro Monat", "img/words_month_barchart.png")
+generate_barchart(list_words_month, list_words_month_values, "Anzahl", "Anzahl Wörter pro Monat",
+                  "img/words_month_barchart.png")
 generate_barchart(list_emojis, list_emojis_values, "Anzahl", "Meist genutzte Emojis", "img/emojis_barchart.png")
+plt.show()
