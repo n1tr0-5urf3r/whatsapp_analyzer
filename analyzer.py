@@ -2,6 +2,8 @@ import re
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import rcParams
+# -*- coding: UTF-8 -*-
 
 # TODO
 # most used emojis
@@ -31,14 +33,15 @@ def generate_piechart(labels, values, colors, title, output):
 
 def generate_barchart(labels, values, ylabel, title, output):
     plt.clf()
-    plt.figure(figsize=(12, 5))
+    plt.figure(figsize=(13, 7))
     x_axis = tuple(labels)
     y_pos = np.arange(len(x_axis))
     plt.bar(y_pos, values, align='center', alpha=0.5)
     plt.xticks(y_pos, x_axis)
+    plt.xticks(fontname="Segoe UI Emoji")
     plt.ylabel(ylabel)
     plt.title(title)
-    plt.savefig(output)
+    plt.savefig(output, dpi=100)
 
 chat = file_txt.read()
 # Bring into csv format
@@ -65,6 +68,8 @@ total_words = 0
 amount_words = {}
 amount_words_user = {usr_sender: 0, usr_recpt: 0}
 amount_months = {}
+amount_emojis = {}
+pattern_not_emoji = '[\d\w!"§\\$%&@/\'„“()=?`´²–³{[\].|}^*\-+#,;:<>]'
 
 # Read fields from csv into variables
 with open('chat.csv', encoding="utf8") as csvfile:
@@ -85,12 +90,24 @@ with open('chat.csv', encoding="utf8") as csvfile:
         # Count words
         message_list = message.split()
         for word in message_list:
+            # Count most used words
             if word in amount_words:
                 amount_words[word] += 1
             else:
                 amount_words[word] = 1
+            # Count words per sender
             if sender in amount_words_user:
                 amount_words_user[sender] += 1
+            # Count emojis
+            if not re.match(pattern_not_emoji, word):
+                # Remove everything else from emojis
+                emoji = re.sub(pattern_not_emoji+'♀', '', word)
+                for char in list(emoji):
+                    if '\u200d' not in emoji:
+                        if char in amount_emojis:
+                            amount_emojis[char] += 1
+                        else:
+                            amount_emojis[char] = 1
             total_words += 1
 
         # Messages by month
@@ -101,8 +118,11 @@ with open('chat.csv', encoding="utf8") as csvfile:
             amount_months[month] = 1
 
 sorted_words_values = sorted(amount_words.items(), key=lambda x: x[1], reverse=True)
+sorted_emojis = sorted(amount_emojis.items(), key=lambda  x: x[1], reverse= True)
 list_words = []
 list_words_values = []
+list_emojis = []
+list_emojis_values = []
 list_words_month_values = []
 list_words_month = []
 
@@ -116,16 +136,23 @@ print("Wörter gesamt: {}".format(total_words))
 print(" Wörter von {}: {}".format(usr_recpt, amount_words_user[usr_recpt]))
 print(" Wörter von {}: {}".format(usr_sender, amount_words_user[usr_sender]))
 print("Meist genutzte Wörter: ")
-for counter in range(0, 19):
+for counter in range(0, 20):
     print(" {}: {}-mal".format(sorted_words_values[counter][0], sorted_words_values[counter][1]))
     list_words.append(sorted_words_values[counter][0])
     list_words_values.append(sorted_words_values[counter][1])
 print("Nachrichten pro Monat")
+print("Meist genutzte Emojis: ")
+for counter in range(0, 10):
+    print(" {}: {}-mal". format(sorted_emojis[counter][0], sorted_emojis[counter][1]))
+    list_emojis.append("{} ".format(sorted_emojis[counter][0]))
+    #list_emojis.append(sorted_emojis[counter][0].encode())
+    list_emojis_values.append(sorted_emojis[counter][1])
 for k, v in amount_months.items():
     print(" Monat {} - {} Nachrichten".format(k, v))
-    list_words_month.append(k)
+    list_words_month.append(k.replace(".","/"))
     list_words_month_values.append(v)
 
+rcParams['font.sans-serif'] = ['Segoe UI Emoji']
 
 # Generate graphical output
 # Messages
@@ -145,3 +172,4 @@ generate_piechart(labels_words, values_words, colors, title_words, output_words)
 
 generate_barchart(list_words, list_words_values, "Anzahl", "Meist genutzte Wörter", "img/words_barchart.png")
 generate_barchart(list_words_month, list_words_month_values, "Anzahl", "Anzahl Wörter pro Monat", "img/words_month_barchart.png")
+generate_barchart(list_emojis, list_emojis_values, "Anzahl", "Meist genutzte Emojis", "img/emojis_barchart.png")
