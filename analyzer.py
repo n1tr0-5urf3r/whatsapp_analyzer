@@ -2,13 +2,12 @@ import re
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import rcParams
 
 # -*- coding: UTF-8 -*-
 
 # TODO
-# most used emojis
 # Cleanup
+# Dates and newlines get messed up, need to fix the regex
 
 # The input file, Send via E-Mail as txt in whatsapp
 file_txt = open("chat.txt", "r", encoding="utf8")
@@ -17,8 +16,9 @@ file_txt = open("chat.txt", "r", encoding="utf8")
 file_csv = open("chat.csv", "w", encoding="utf8")
 
 # Global variables
-usr_sender = "EnterFirstNameHere"
-usr_recpt = "EnterSecondNameHere"
+usr_sender = ""
+usr_recpt = ""
+
 
 def generate_piechart(labels, values, colors, title, output):
     def absolute_value(val):
@@ -51,16 +51,24 @@ chat = file_txt.read()
 # Bring into csv format
 # Remove ; because it could interfere with delimiters
 chat = chat.replace(";", ":")
-chat = re.sub(r" um | - ", ";", chat)
+chat = re.sub(r"(^[0-9]{2}\.[0-9]{2}\.[0-9]{2}), ", r"\1;", chat, flags=re.MULTILINE)
+chat = re.sub (r"([0-9]{2}:[0-9]{2}) - ", r"\1;", chat)
 # Make column for users
 chat = chat.replace("{}: ".format(usr_sender), "{};".format(usr_sender))
 chat = chat.replace("{}: ".format(usr_recpt), "{};".format(usr_recpt))
 # Remove unicode new line char
 chat = chat.replace('\u200e', '')
+# Pictures and stuff
+chat = chat.replace('<Medien ausgeschlossen>', "<Bild>")
 
 # Clean messages over multiple lines up and move them into one, probably should be made recursive instead of looping
-for i in range(1, 35):
-    chat = re.sub(r'(\d{2}\.\d{2}.*)\n(?!\d{2}\.\d{2}\.\d{2};)(.*)', r'\1\2', chat)
+#for i in range(1, 15):
+#    chat = re.sub(r'(\d{2}\.\d{2}.*)\n(?!\d{2}\.\d{2}\.\d{2};)(.*)', r'\1\2', chat)
+#    print("Working..." + str(i))
+
+chat = re.sub(r'\n', '', chat, flags=re.MULTILINE)
+
+chat = re.sub(r'([0-9]{2}\.[0-9]{2}\.[0-9]{2})', r'\n\1', chat)
 
 # Write formatted data in csv file and close everything
 file_csv.write(chat)
@@ -78,6 +86,8 @@ pattern_not_emoji = '[\d\w!"§\\$%&@/\'„“()=?`´²–³{[\].|}^*\-+#,;:<>]'
 # Read fields from csv into variables
 with open('chat.csv', encoding="utf8") as csvfile:
     reader = csv.reader(csvfile, delimiter=";")
+    # Skip the first line, it is empty
+    next(csvfile)
     first_line = True
     for row in reader:
         full_date = row[0]
@@ -175,4 +185,3 @@ generate_barchart(list_words, list_words_values, "Anzahl", "Meist genutzte Wört
 generate_barchart(list_words_month, list_words_month_values, "Anzahl", "Anzahl Wörter pro Monat",
                   "img/words_month_barchart.png")
 generate_barchart(list_emojis, list_emojis_values, "Anzahl", "Meist genutzte Emojis", "img/emojis_barchart.png")
-plt.show()
