@@ -52,7 +52,7 @@ chat = file_txt.read()
 # Remove ; because it could interfere with delimiters
 chat = chat.replace(";", ":")
 chat = re.sub(r"(^[0-9]{2}\.[0-9]{2}\.[0-9]{2}), ", r"\1;", chat, flags=re.MULTILINE)
-chat = re.sub (r"([0-9]{2}:[0-9]{2}) - ", r"\1;", chat)
+chat = re.sub(r"([0-9]{2}:[0-9]{2}) - ", r"\1;", chat)
 # Make column for users
 chat = chat.replace("{}: ".format(usr_sender), "{};".format(usr_sender))
 chat = chat.replace("{}: ".format(usr_recpt), "{};".format(usr_recpt))
@@ -61,12 +61,8 @@ chat = chat.replace('\u200e', '')
 # Pictures and stuff
 chat = chat.replace('<Medien ausgeschlossen>', "<Bild>")
 
-# Clean messages over multiple lines up and move them into one, probably should be made recursive instead of looping
-#for i in range(1, 15):
-#    chat = re.sub(r'(\d{2}\.\d{2}.*)\n(?!\d{2}\.\d{2}\.\d{2};)(.*)', r'\1\2', chat)
-#    print("Working..." + str(i))
-
-chat = re.sub(r'\n', '', chat, flags=re.MULTILINE)
+# Merge messages over multiple lines into one line
+chat = re.sub(r'\n', ' ', chat, flags=re.MULTILINE)
 
 chat = re.sub(r'([0-9]{2}\.[0-9]{2}\.[0-9]{2})', r'\n\1', chat)
 
@@ -94,9 +90,12 @@ with open('chat.csv', encoding="utf8") as csvfile:
         if first_line:
             first_date = full_date
             first_line = False
-        clock = row[1]
-        sender = row[2]
-        message = row[3].lower()
+        if len(row) == 4:
+            clock = row[1]
+            sender = row[2]
+            message = row[3].lower()
+        else:
+            continue
         # Count messages per user
         if sender in amount_messages:
             amount_messages[sender] += 1
