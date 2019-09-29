@@ -9,17 +9,26 @@ import os
 
 # -*- coding: UTF-8 -*-
 
-def generate_piechart(labels, values, colors, title, output):
+def generate_piechart(labels, values, colors, title, output, round=True):
     """Generates a piechart"""
 
     def absolute_value(val):
         a = np.round(val / 100. * values.sum(), 0)
         return '{0:g}'.format(float(a))
 
+    def absolute_value_full(val):
+        a = np.round(val / 100. * values.sum(), 2)
+        return a
+
     plt.clf()
-    plt.pie(values, labels=labels, colors=colors,
-            autopct=absolute_value, startangle=90)
-    plt.title(title)
+    plt.figure(figsize=(14, 7))
+    if round:
+        plt.pie(values, labels=labels, colors=colors,
+                autopct=absolute_value, startangle=90, textprops={'fontsize': 14})
+    else:
+        plt.pie(values, labels=labels, colors=colors,
+                autopct=absolute_value_full, startangle=90, textprops={'fontsize': 14})
+    plt.title(title, fontsize=17)
     plt.axis('equal')
     plt.tight_layout()
     plt.savefig(output)
@@ -28,12 +37,12 @@ def generate_piechart(labels, values, colors, title, output):
 def generate_barchart(labels, values, ylabel, title, output):
     """Generates a barchart"""
     plt.clf()
-    plt.figure(figsize=(15, 7))
+    plt.figure(figsize=(14, 7))
     y_pos = np.arange(len(labels))
     plt.bar(y_pos, values, align='center', alpha=0.5, color=generate_colors([0])[0], width=0.4)
-    plt.xticks(y_pos, labels)
+    plt.xticks(y_pos, labels, fontname="Segoe UI Emoji", fontsize=11)
     plt.ylabel(ylabel, fontsize=13)
-    plt.title(title, fontsize=15)
+    plt.title(title, fontsize=17)
     plt.savefig(output, dpi=100)
 
 
@@ -99,35 +108,52 @@ def generate_charts(users):
     values_messages = []
     labels_words = []
     values_words = []
+    labels_average = []
+    values_average = []
     total_messages = get_total_messages(amount_messages)
+    words_per_message = get_words_per_message(users)
     for user in users:
-        labels_messages.append("Nachrichten\nvon {}".format(user))
-        labels_words.append("Wörter\nvon {}".format(user))
+        labels_messages.append("von {}".format(user))
+        labels_words.append("von {}".format(user))
         values_messages.append(amount_messages[user])
         values_words.append(amount_words_user[user])
+        labels_average.append("{}".format(user))
+        values_average.append(words_per_message[user])
     values_messages = np.array(values_messages)
     values_words = np.array(values_words)
+    values_average = np.array(values_average)
     title_messages = "Nachrichten seit {}\nGesamt: {}\n".format(first_date, total_messages)
     output_messsages = 'img/messages_piechart.png'
     title_words = "Wörter gesamt: {}\n".format(total_words)
     output_words = "img/words_piechart.png"
+    title_average = "Wörter pro Nachricht im Schnitt"
+    output_average = 'img/average_piechart.png'
 
     generate_piechart(labels_words, values_words, colors, title_words, output_words)
     generate_piechart(labels_messages, values_messages, colors, title_messages, output_messsages)
+    generate_piechart(labels_average, values_average, colors, title_average, output_average, round=False)
     generate_barchart(list_words, list_words_values, "Anzahl", "Meist genutzte Wörter", "img/words_barchart.png")
     generate_barchart(list_words_month, list_words_month_values, "Anzahl", "Anzahl Wörter pro Monat",
                       "img/words_month_barchart.png")
     generate_barchart(list_emojis, list_emojis_values, "Anzahl", "Meist genutzte Emojis", "img/emojis_barchart.png")
 
+def get_words_per_message(users):
+    words_per_message = {}
+    for user in users:
+        words_per_message[user] = round(amount_words_user[user]/amount_messages[user], 2)
+    return words_per_message
 
 def generate_summary(users):
+
     total_messages = get_total_messages(amount_messages)
+    words_per_message = get_words_per_message(users)
     print("Nachrichten seit {}".format(first_date))
     print("Nachrichten gesamt: {}".format(total_messages))
     print("Wörter gesamt: {}".format(total_words))
     for user in users:
         print(" Nachrichten von {}: {}".format(user, amount_messages[user]))
         print(" Wörter von {}: {}".format(user, amount_words_user[user]))
+        print(" Wörter pro Nachricht im Schnitt von {}: {}".format(user, words_per_message[user]))
     print("Meist genutzte Wörter: ")
     for counter in range(0, 20):
         print(" {}: {}-mal".format(sorted_words_values[counter][0], sorted_words_values[counter][1]))
@@ -163,16 +189,18 @@ def generate_output():
 
     def cleanup():
         file_list = pair1 + pair2 + ['img/words_month_barchart.png', 'img/messages_piechart.png_v.png',
-                                     'img/words_barchart.png_v.png']
+                                     'img/words_barchart.png_v.png', 'img/average_piechart.png', 'img/words_month_barchart.png_v.png']
         for file in file_list:
             os.remove(file)
 
     pair1 = ['img/messages_piechart.png', 'img/words_piechart.png']
     pair2 = ['img/words_barchart.png', 'img/emojis_barchart.png']
+    pair3 = ['img/words_month_barchart.png', 'img/average_piechart.png']
 
     merge_vertically(pair1)
     merge_vertically(pair2)
-    merge_horizontally(['img/messages_piechart.png_v.png', 'img/words_barchart.png_v.png', 'img/words_month_barchart.png'])
+    merge_vertically(pair3)
+    merge_horizontally(['img/messages_piechart.png_v.png', 'img/words_barchart.png_v.png', 'img/words_month_barchart.png_v.png'])
     cleanup()
 
 
