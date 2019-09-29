@@ -208,7 +208,7 @@ def generate_output():
     cleanup()
 
 
-generate_csv("chat_group.txt", "chat.csv")
+generate_csv("chat.txt", "chat.csv")
 
 users = collect_members("chat.csv")
 amount_messages = {}
