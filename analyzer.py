@@ -14,7 +14,7 @@ def generate_piechart(labels, values, colors, title, output):
 
     def absolute_value(val):
         a = np.round(val / 100. * values.sum(), 0)
-        return a
+        return '{0:g}'.format(float(a))
 
     plt.clf()
     plt.pie(values, labels=labels, colors=colors,
@@ -28,14 +28,12 @@ def generate_piechart(labels, values, colors, title, output):
 def generate_barchart(labels, values, ylabel, title, output):
     """Generates a barchart"""
     plt.clf()
-    plt.figure(figsize=(13, 7))
-    x_axis = tuple(labels)
-    y_pos = np.arange(len(x_axis))
-    plt.bar(y_pos, values, align='center', alpha=0.5, color=generate_colors([0])[0])
-    plt.xticks(y_pos, x_axis)
-    #plt.xticks(fontname="Segoe UI Emoji")
-    plt.ylabel(ylabel)
-    plt.title(title)
+    plt.figure(figsize=(15, 7))
+    y_pos = np.arange(len(labels))
+    plt.bar(y_pos, values, align='center', alpha=0.5, color=generate_colors([0])[0], width=0.4)
+    plt.xticks(y_pos, labels)
+    plt.ylabel(ylabel, fontsize=13)
+    plt.title(title, fontsize=15)
     plt.savefig(output, dpi=100)
 
 
@@ -164,21 +162,21 @@ def generate_output():
         img_merge.save('img/complete.png')
 
     def cleanup():
-        file_list = pair1 + pair2 + ['img/emojis_barchart.png', 'img/messages_piechart.png_v.png',
+        file_list = pair1 + pair2 + ['img/words_month_barchart.png', 'img/messages_piechart.png_v.png',
                                      'img/words_barchart.png_v.png']
         for file in file_list:
             os.remove(file)
 
     pair1 = ['img/messages_piechart.png', 'img/words_piechart.png']
-    pair2 = ['img/words_barchart.png', 'img/words_month_barchart.png']
+    pair2 = ['img/words_barchart.png', 'img/emojis_barchart.png']
 
     merge_vertically(pair1)
     merge_vertically(pair2)
-    merge_horizontally(['img/messages_piechart.png_v.png', 'img/words_barchart.png_v.png', 'img/emojis_barchart.png'])
+    merge_horizontally(['img/messages_piechart.png_v.png', 'img/words_barchart.png_v.png', 'img/words_month_barchart.png'])
     cleanup()
 
 
-generate_csv("chat.txt", "chat.csv")
+generate_csv("chat_group.txt", "chat.csv")
 
 users = collect_members("chat.csv")
 amount_messages = {}
