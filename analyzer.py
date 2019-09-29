@@ -137,14 +137,15 @@ def generate_charts(users):
                       "img/words_month_barchart.png")
     generate_barchart(list_emojis, list_emojis_values, "Anzahl", "Meist genutzte Emojis", "img/emojis_barchart.png")
 
+
 def get_words_per_message(users):
     words_per_message = {}
     for user in users:
-        words_per_message[user] = round(amount_words_user[user]/amount_messages[user], 2)
+        words_per_message[user] = round(amount_words_user[user] / amount_messages[user], 2)
     return words_per_message
 
-def generate_summary(users):
 
+def generate_summary(users):
     total_messages = get_total_messages(amount_messages)
     words_per_message = get_words_per_message(users)
     print("Nachrichten seit {}".format(first_date))
@@ -173,6 +174,7 @@ def generate_summary(users):
 
 def generate_output():
     """Generates a file with all charts"""
+
     def merge_vertically(images_list):
         imgs = [Image.open(i) for i in images_list]
         min_img_shape = sorted([(np.sum(i.size), i.size) for i in imgs])[0][1]
@@ -189,7 +191,8 @@ def generate_output():
 
     def cleanup():
         file_list = pair1 + pair2 + ['img/words_month_barchart.png', 'img/messages_piechart.png_v.png',
-                                     'img/words_barchart.png_v.png', 'img/average_piechart.png', 'img/words_month_barchart.png_v.png']
+                                     'img/words_barchart.png_v.png', 'img/average_piechart.png',
+                                     'img/words_month_barchart.png_v.png']
         for file in file_list:
             os.remove(file)
 
@@ -200,7 +203,8 @@ def generate_output():
     merge_vertically(pair1)
     merge_vertically(pair2)
     merge_vertically(pair3)
-    merge_horizontally(['img/messages_piechart.png_v.png', 'img/words_barchart.png_v.png', 'img/words_month_barchart.png_v.png'])
+    merge_horizontally(
+        ['img/messages_piechart.png_v.png', 'img/words_barchart.png_v.png', 'img/words_month_barchart.png_v.png'])
     cleanup()
 
 
@@ -241,8 +245,11 @@ with open('chat.csv', encoding="utf8") as csvfile:
 
         # Count words
         message_list = message.split()
+        punctuation_chars = ['!', '?', '.', ',', ]
         for word in message_list:
             # Count most used words
+            for p in punctuation_chars:
+                word = word.replace(p, '')
             if word in amount_words:
                 amount_words[word] += 1
             else:
