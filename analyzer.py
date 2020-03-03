@@ -141,7 +141,7 @@ def generate_charts(users):
                       "img/emojis_piechart.png")
 
     generate_barchart(list_words, list_words_values, "Anzahl", "Meist genutzte Wörter", "img/words_barchart.png")
-    generate_barchart(list_words_month, list_words_month_values, "Anzahl", "Anzahl Wörter pro Monat",
+    generate_barchart(list_words_month, list_words_month_values, "Anzahl", "Anzahl Nachrichten pro Monat",
                       "img/words_month_barchart.png")
     generate_barchart(list_emojis, list_emojis_values, "Anzahl", "Meist genutzte Emojis", "img/emojis_barchart.png")
 
