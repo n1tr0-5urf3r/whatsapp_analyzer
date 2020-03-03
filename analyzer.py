@@ -106,48 +106,57 @@ def generate_charts(users):
     colors = generate_colors(users)
     labels_messages = []
     values_messages = []
-    labels_words = []
+    values_emojis = []
     values_words = []
     labels_average = []
     values_average = []
+    values_average_emojis = []
     total_messages = get_total_messages(amount_messages)
-    words_per_message = get_words_per_message(users)
+    words_per_message = get_words_per_message(users, amount_words_user)
+    emojis_per_message = get_words_per_message(users, amount_emojis_user)
     for user in users:
         labels_messages.append("von {}".format(user))
-        labels_words.append("von {}".format(user))
         values_messages.append(amount_messages[user])
         values_words.append(amount_words_user[user])
+        values_emojis.append(amount_emojis_user[user])
         labels_average.append("{}".format(user))
         values_average.append(words_per_message[user])
+        values_average_emojis.append(emojis_per_message[user])
     values_messages = np.array(values_messages)
     values_words = np.array(values_words)
     values_average = np.array(values_average)
-    title_messages = "Nachrichten seit {}\nGesamt: {}\n".format(first_date, total_messages)
-    output_messsages = 'img/messages_piechart.png'
-    title_words = "Wörter gesamt: {}\n".format(total_words)
-    output_words = "img/words_piechart.png"
-    title_average = "Wörter pro Nachricht im Schnitt"
-    output_average = 'img/average_piechart.png'
+    values_average_emojis = np.array(values_average_emojis)
+    values_emojis = np.array(values_emojis)
 
-    generate_piechart(labels_words, values_words, colors, title_words, output_words)
-    generate_piechart(labels_messages, values_messages, colors, title_messages, output_messsages)
-    generate_piechart(labels_average, values_average, colors, title_average, output_average, round=False)
+    generate_piechart(labels_messages, values_words, colors, "Wörter gesamt: {}\n".format(total_words),
+                      "img/words_piechart.png")
+    generate_piechart(labels_messages, values_messages, colors,
+                      "Nachrichten seit {}\nGesamt: {}\n".format(first_date, total_messages),
+                      'img/messages_piechart.png')
+    generate_piechart(labels_average, values_average, colors, "Wörter pro Nachricht im Schnitt",
+                      'img/average_piechart.png', round=False)
+    generate_piechart(labels_average, values_average_emojis, colors, "Emojis pro Nachricht im Schnitt",
+                      'img/average_piechart_emojis.png', round=False)
+    generate_piechart(labels_messages, values_emojis, colors, "Emojis gesamt: {}\n".format(total_emojis),
+                      "img/emojis_piechart.png")
+
     generate_barchart(list_words, list_words_values, "Anzahl", "Meist genutzte Wörter", "img/words_barchart.png")
     generate_barchart(list_words_month, list_words_month_values, "Anzahl", "Anzahl Wörter pro Monat",
                       "img/words_month_barchart.png")
     generate_barchart(list_emojis, list_emojis_values, "Anzahl", "Meist genutzte Emojis", "img/emojis_barchart.png")
 
 
-def get_words_per_message(users):
+def get_words_per_message(users, data):
     words_per_message = {}
     for user in users:
-        words_per_message[user] = round(amount_words_user[user] / amount_messages[user], 2)
+        words_per_message[user] = round(data[user] / amount_messages[user], 2)
     return words_per_message
 
 
 def generate_summary(users):
     total_messages = get_total_messages(amount_messages)
-    words_per_message = get_words_per_message(users)
+    words_per_message = get_words_per_message(users, amount_words_user)
+    emojis_per_message = get_words_per_message(users, amount_emojis_user)
     print("Nachrichten seit {}".format(first_date))
     print("Nachrichten gesamt: {}".format(total_messages))
     print("Wörter gesamt: {}".format(total_words))
@@ -155,6 +164,8 @@ def generate_summary(users):
         print(" Nachrichten von {}: {}".format(user, amount_messages[user]))
         print(" Wörter von {}: {}".format(user, amount_words_user[user]))
         print(" Wörter pro Nachricht im Schnitt von {}: {}".format(user, words_per_message[user]))
+        print(" Emojis von {}: {}".format(user, amount_emojis_user[user]))
+        print(" Emojis pro Nachricht im Schnitt von {}: {}".format(user, emojis_per_message[user]))
     print("Meist genutzte Wörter: ")
     for counter in range(0, 20):
         print(" {}: {}-mal".format(sorted_words_values[counter][0], sorted_words_values[counter][1]))
@@ -192,19 +203,23 @@ def generate_output():
     def cleanup():
         file_list = pair1 + pair2 + ['img/words_month_barchart.png', 'img/messages_piechart.png_v.png',
                                      'img/words_barchart.png_v.png', 'img/average_piechart.png',
-                                     'img/words_month_barchart.png_v.png']
+                                     'img/words_month_barchart.png_v.png', 'img/emojis_piechart.png_v.png',
+                                     'img/emojis_piechart.png', 'img/average_piechart_emojis.png']
         for file in file_list:
             os.remove(file)
 
     pair1 = ['img/messages_piechart.png', 'img/words_piechart.png']
     pair2 = ['img/words_barchart.png', 'img/emojis_barchart.png']
     pair3 = ['img/words_month_barchart.png', 'img/average_piechart.png']
+    pair4 = ['img/emojis_piechart.png', 'img/average_piechart_emojis.png']
 
     merge_vertically(pair1)
     merge_vertically(pair2)
     merge_vertically(pair3)
+    merge_vertically(pair4)
     merge_horizontally(
-        ['img/messages_piechart.png_v.png', 'img/words_barchart.png_v.png', 'img/words_month_barchart.png_v.png'])
+        ['img/messages_piechart.png_v.png', 'img/words_barchart.png_v.png', 'img/words_month_barchart.png_v.png',
+         'img/emojis_piechart.png_v.png'])
     cleanup()
 
 
@@ -213,10 +228,13 @@ generate_csv("chat.txt", "chat.csv")
 users = collect_members("chat.csv")
 amount_messages = {}
 amount_words_user = {}
+amount_emojis_user = {}
 for user in users:
     amount_messages[user] = 0
     amount_words_user[user] = 0
+    amount_emojis_user[user] = 0
 total_words = 0
+total_emojis = 0
 amount_words = {}
 amount_months = {}
 amount_emojis = {}
@@ -250,15 +268,17 @@ with open('chat.csv', encoding="utf8") as csvfile:
             # Count most used words
             for p in punctuation_chars:
                 word = word.replace(p, '')
-            if word in amount_words:
-                amount_words[word] += 1
+            if re.match(pattern_not_emoji, word):
+                if word in amount_words:
+                    amount_words[word] += 1
+                else:
+                    amount_words[word] = 1
+                # Count words per sender
+                if sender in amount_words_user:
+                    amount_words_user[sender] += 1
+                total_words += 1
             else:
-                amount_words[word] = 1
-            # Count words per sender
-            if sender in amount_words_user:
-                amount_words_user[sender] += 1
-            # Count emojis
-            if not re.match(pattern_not_emoji, word):
+                # Count emojis
                 # Remove everything else from emojis
                 emoji = re.sub(pattern_not_emoji + '♀', '', word)
                 for char in list(emoji):
@@ -267,7 +287,9 @@ with open('chat.csv', encoding="utf8") as csvfile:
                             amount_emojis[char] += 1
                         else:
                             amount_emojis[char] = 1
-            total_words += 1
+                        if sender in amount_emojis_user:
+                            amount_emojis_user[sender] += 1
+                        total_emojis += 1
 
         # Messages by month
         month = re.sub('^..\.', "", full_date)
